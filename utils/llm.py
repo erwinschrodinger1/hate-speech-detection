@@ -57,18 +57,20 @@ def compute_comments_llm(data):
     - If there are no hate comments, provide JSON with empty values.
     """
 
-    json_spec = JsonSpec(dict_=data, max_value_length=4000)
-    json_toolkit = JsonToolkit(spec=json_spec)
+    # json_spec = JsonSpec(dict_=data, max_value_length=4000)
+    # json_toolkit = JsonToolkit(spec=json_spec)
 
-    json_agent_executor = create_json_agent(
-        llm=llm_client, toolkit=json_toolkit, verbose=True
-    )
+    # json_agent_executor = create_json_agent(
+    #     llm=llm_client, toolkit=json_toolkit, verbose=True
+    # )
 
-    response = json_agent_executor.run(
-        COMMENT_PROMPT
-    )
+    # response = json_agent_executor.run(
+    #     COMMENT_PROMPT
+    # )
 
-    print(response)
+    # print(response)
+    response = invoke_openai_chat(data, COMMENT_PROMPT)
+    
     return response
 
 

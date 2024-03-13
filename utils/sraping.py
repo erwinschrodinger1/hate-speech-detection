@@ -14,6 +14,7 @@ def scrape_instagram_comments(link):
         "directUrls": [
             link
         ],
+        "resultsLimit": 25
     }
     # Run the Actor and wait for it to finish
     run = client.actor(
@@ -37,7 +38,7 @@ def scrape_facebook_comments(link):
     run_input = {
         "includeNestedComments": True,
         "startUrls": [{"url": link}],
-        "resultsLimit": 20,
+        "resultsLimit": 25,
     }
     # Run the Actor and wait for it to finish
     run = client.actor(
@@ -61,7 +62,7 @@ def scrape_facebook_comments(link):
 def scrape_youtube_comments(link):
     run_input = {
         "start_urls": [{"url": link}],
-        "max_comments": 100,
+        "max_comments": 25,
         "proxySettings": {"useApifyProxy": False},
     }
 
@@ -111,7 +112,7 @@ def scrape_linkedin_comments(link):
 def scrape_twitter_comments(link):
    # Prepare the Actor input
     run_input = {
-        "maxTweets": 5,
+        "maxTweets": 25,
         "urls": [link],
     }
 
