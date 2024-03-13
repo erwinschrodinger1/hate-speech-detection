@@ -4,8 +4,10 @@ import os
 import streamlit as st
 from utils.utils import identify_social_media, convert_llm_res_dict
 from utils.sraping import scrape_youtube_comments, scrape_twitter_comments, scrape_instagram_comments, scrape_facebook_comments
-from utils.llm import compute_comments_llm
+from utils.scraping_post import scrape_youtube_caption
+from utils.llm import compute_comments_llm, compute_caption_llm
 from streamlit_echarts import st_echarts
+import json
 
 SAD_LIMIT = 0.5
 NEUTRAL_LIMIT = 0.3
@@ -152,3 +154,89 @@ if (submit_btn):
                 st.write(f"Reason: {comment['reason']}")
                 st.write(f"Hate On: {', '.join(comment['hateOn'])}")
                 st.write(f"Hate Percentage: {comment['hatePercentage']}")
+
+    elif selection_option == "Post":
+        if link_of == "YouTube":
+            scraped_data = scrape_youtube_comments(link)
+        elif link_of == "Twitter":
+            scraped_data = scrape_twitter_comments(link)
+        elif link_of == "Instagram":
+            scraped_data = scrape_instagram_comments(link)
+        elif link_of == "Facebook":
+            scraped_data = scrape_facebook_comments(link)
+
+    elif selection_option == "Video":
+        if link_of == "YouTube":
+            scraped_data = scrape_youtube_caption(link)
+
+        response = convert_llm_res_dict(compute_caption_llm(scraped_data))
+        with open("llmcaption.json","w") as f:
+            f.write(json.dumps(response))
+        print(response)
+        intensity_data = [
+            {"name": "Description",
+                "value": response["intensity"]["hate_speech_percentage_description"]},
+            {"name": "Caption",
+                "value": response["intensity"]["hate_speech_percentage_caption"]},
+            {"name": "Overall",
+                "value": response["intensity"]["overall_hate_percentage"]}
+        ]
+
+        # Create bar chart using ECharts
+        options = {
+            "xAxis": {"type": "category", "data": ["Description", "Caption", "Overall"]},
+            "yAxis": {"type": "value"},
+            "series": [{"type": "bar", "data": intensity_data}]
+        }
+
+        st_echarts(options=options)
+        # Streamlit app
+
+        st.markdown("##### Hate in Description")
+        if response["sections"]["description"]["racial_hate_speech"]:
+            st.write("Racial Hate Speech:",
+                     response["sections"]["description"]["racial_hate_speech"])
+        if response["sections"]["description"]["homophobic_transphobic_hate_speech"]:
+            st.write("Homophobic/Transphobic Hate Speech:",
+                     response["sections"]["description"]["homophobic_transphobic_hate_speech"])
+        if response["sections"]["description"]["religious_hate_speech"]:
+            st.write("Religious Hate Speech:",
+                     response["sections"]["description"]["religious_hate_speech"])
+        if response["sections"]["description"]["sexist_speech"]:
+            st.write("Sexist Speech:",
+                     response["sections"]["description"]["sexist_speech"])
+        if response["sections"]["description"]["ableist_speech"]:
+            st.write("Ableist Speech:",
+                     response["sections"]["description"]["ableist_speech"])
+        if response["sections"]["description"]["hate_description_section"]:
+            st.write("Hate Description Section:",
+                     response["sections"]["description"]["hate_description_section"])
+
+        # Render sections from caption
+        st.markdown("##### Hate in Caption Section")
+        if response["sections"]["caption"]["contains_hate_speech"]:
+            st.write("Contains Hate Speech:",
+                     response["sections"]["caption"]["contains_hate_speech"])
+        if response["sections"]["caption"]["racial_hate_speech"]:
+            st.write("Racial Hate Speech:",
+                     response["sections"]["caption"]["racial_hate_speech"])
+        if response["sections"]["caption"]["homophobic_transphobic_hate_speech"]:
+            st.write("Homophobic/Transphobic Hate Speech:",
+                     response["sections"]["caption"]["homophobic_transphobic_hate_speech"])
+        if response["sections"]["caption"]["religious_hate_speech"]:
+            st.write("Religious Hate Speech:",
+                     response["sections"]["caption"]["religious_hate_speech"])
+        if response["sections"]["caption"]["sexist_speech"]:
+            st.write("Sexist Speech:",
+                     response["sections"]["caption"]["sexist_speech"])
+        if response["sections"]["caption"]["ableist_speech"]:
+            st.write("Ableist Speech:",
+                     response["sections"]["caption"]["ableist_speech"])
+        if response["sections"]["caption"]["hate_caption_section"]:
+            st.write("Hate Caption Section:",
+                     response["sections"]["caption"]["hate_caption_section"])
+
+        st.markdown("##### Title Section")
+        if response["sections"]["title"]["hate_caption_section"]:
+            st.write("Hate Caption Section in Title:",
+                     response["sections"]["title"]["hate_caption_section"])
