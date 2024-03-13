@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-llm_client = ChatOpenAI(model="gpt-3.5-turbo", api_key=os.environ.get("OPENAI_API_KEY"), temperature=0)
+llm_client = ChatOpenAI(model="gpt-3.5-turbo",
+                        api_key=os.environ.get("OPENAI_API_KEY"), temperature=0)
+
 
 def compute_comments_llm(data):
     COMMENT_PROMPT = """You've been assigned the task of analyzing comments for hate speech and you can only talk JSON format. Your analysis should encompass the following:
@@ -50,7 +52,7 @@ def compute_comments_llm(data):
     - If there are no comments, output: "No Comments".
     - If there are no hate comments, provide JSON with empty values.
     """
-    
+
     json_spec = JsonSpec(dict_=data, max_value_length=4000)
     json_toolkit = JsonToolkit(spec=json_spec)
 
@@ -65,3 +67,61 @@ def compute_comments_llm(data):
     print(response)
     return response
 
+
+def compute_caption_llm(data):
+    CAPTION_PROMPT = """You've been assigned the task of analyzing for hate speech in youtube video and you can only talk JSON format. Your analysis should encompass the following:
+
+    - Total duration of video 
+    - Total duration of caption containing racial hate speech
+    - Total duration of caption containing homophobic or transphobic hate speech
+    - Total duration of caption containing religious hate speech
+    - Total duration of caption containing sexist speech
+    - Total duration of caption containing ableist speech
+    - Total duration of hate caption
+    - Details of each hate comment including text, username, profile name, reason, types of hate speech, and hate intensity
+    - Percentage of hate in the video
+
+    Results should adhere to this structure:
+
+    ```json
+    {
+        "totalDuration": "Total duration of video in JSON format",
+        "racialHateSpeech": "Total durtation of Caption with racial hate speech",
+        "homophobicTransphobicSpeech": "Total durtation of Caption with homophobic or transphobic hate speech",
+        "religiousHateSpeech": "Total durtation of Caption with religious hate speech",
+        "sexistSpeech": "Total durtation of Caption with sexist speech",
+        "ableistSpeech": "Total durtation of Caption with ableist speech",
+        "totalDurtationOfHateCaption": "Total durtation of hate Caption",
+        "hateCaption": [
+            {
+                "text": "Content of the hate comment",
+                "timeStamp":"Time of the comment in YY/MM/DD HH:MM:SS format",
+                "username": "Username of the commenter",
+                "profileName": "Profile name of the commenter",
+                "reason": "Reason for classifying the comment as hate speech",
+                "hateOn": ["Types of hate speech identified"],
+                "hatePercentage": Intensity of hate speech (percentage) in integer
+            }
+        ]
+    }
+    ```
+
+    For the summary:
+    - If there are no comments, output: "No Comments".
+    - If there are no hate comments, provide JSON with empty values.
+    """
+
+    
+    json_spec = JsonSpec(dict_=data, max_value_length=4000)
+    json_toolkit = JsonToolkit(spec=json_spec)
+
+    json_agent_executor = create_json_agent(
+        llm=llm_client, toolkit=json_toolkit, verbose=True
+    )
+
+    response = json_agent_executor.run(
+        CAPTION_PROMPT
+    )
+
+    print(response)
+    return response
