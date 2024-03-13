@@ -1,5 +1,6 @@
 from apify_client import ApifyClient
 import os
+import json
 
 api_key = os.environ.get("APIFY_API_TOKEN")
 print(api_key)
@@ -128,3 +129,33 @@ def scrape_twitter_comments(link):
     return {
         "comments": datas
     }
+
+
+link = "https://www.youtube.com/watch?v=9x9J6tpNT4Y"
+youtube_comments = scrape_youtube_comments(link)
+comments = []
+# Iterate over each comment in the provided JSON data
+for comment_data in youtube_comments["comments"]:
+    # Extract relevant information from the comment_data
+    username = comment_data["comment_author_name"]
+    full_text = comment_data["comment_text"]
+    created_at = comment_data["comment_date"]
+    
+    # Create a new JSON object for the comment
+    comment_json = {
+        "userName": username,
+        "full_text": full_text,
+        "created_at": created_at
+    }
+    
+    # Append the comment JSON object to the comments list
+    comments.append(comment_json)
+
+# Create a JSON object with the comments list
+output_json = {"comments": comments}
+
+file_path = "youtube_comments.json"
+
+# Write the JSON data to the file
+with open(file_path, "w") as file:
+    json.dump(output_json, file, indent=2)

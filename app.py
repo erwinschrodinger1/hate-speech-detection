@@ -172,12 +172,12 @@ def handle_comments(link_of, link):
             data = scrape_twitter_comments(link)
         st.write("Data Scraped.")
         st.write("Analaysing data...")
-        # response_string = invoke_openai_chat(data, COMMENT_PROMPT)
+        response_string = invoke_openai_chat(data, COMMENT_PROMPT)
 
     handle_image_change(1)
     st.write(data)
 
-    response_string = """```json
+    # response_string = """```json
     #         {
     #     "totalComments": 7,
     #     "racialHateSpeech": 1,
