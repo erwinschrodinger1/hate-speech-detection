@@ -2,11 +2,15 @@ from langchain.agents import create_json_agent
 from langchain_community.agent_toolkits import JsonToolkit
 from langchain_community.tools.json.tool import JsonSpec
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 import json
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+client_openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
 llm_client = ChatOpenAI(model="gpt-3.5-turbo",
                         api_key=os.environ.get("OPENAI_API_KEY"), temperature=0)
 
@@ -68,60 +72,75 @@ def compute_comments_llm(data):
     return response
 
 
+def invoke_openai_chat(json_data, prompt):
+    response = client_openai.chat.completions.create(model="gpt-3.5-turbo", temperature=0, messages=[
+        {"role": "system",
+         "content": "You are a helpful assistant."},
+        {"role": "user", "content": json.dumps(
+            json_data)},
+        {"role": "assistant",
+         "content": prompt},
+    ])
+    return response.choices[0].message.content
+
+
 def compute_caption_llm(data):
-    CAPTION_PROMPT = """You've been assigned the task of analyzing for hate speech in youtube video and you can only talk JSON format. Your analysis should encompass the following:
-
-    - Total duration of video 
-    - Total duration of caption containing racial hate speech
-    - Total duration of caption containing homophobic or transphobic hate speech
-    - Total duration of caption containing religious hate speech
-    - Total duration of caption containing sexist speech
-    - Total duration of caption containing ableist speech
-    - Total duration of hate caption
-    - Details of each hate comment including text, username, profile name, reason, types of hate speech, and hate intensity
-    - Percentage of hate in the video
-
+    CAPTION_PROMPT = """You've been assigned the task of analyzing hate speech in YouTube videos, and you're required to present your findings in JSON format. Your analysis should cover the following aspects:
+    - Determine if there is hate speech in the video title.
+    - Identify hate speech in the video comments.
+    - Extract sections of the video description containing:
+    - Racial hate speech
+    - Homophobic or transphobic hate speech
+    - Religious hate speech
+    - Sexist speech
+    - Ableist speech
+    - Determine the intensity of hate speech in the video description as a percentage.
+    - Determine if there is hate speech in the video captions.
+    - Extract sections of the video captions containing:
+    - Racial hate speech
+    - Homophobic or transphobic hate speech
+    - Religious hate speech
+    - Sexist speech
+    - Ableist speech
+    - Determine the intensity of hate speech in the video captions as a percentage.
+    - Calculate the overall percentage of hate speech in the video.
     Results should adhere to this structure:
-
     ```json
     {
-        "totalDuration": "Total duration of video in JSON format",
-        "racialHateSpeech": "Total durtation of Caption with racial hate speech",
-        "homophobicTransphobicSpeech": "Total durtation of Caption with homophobic or transphobic hate speech",
-        "religiousHateSpeech": "Total durtation of Caption with religious hate speech",
-        "sexistSpeech": "Total durtation of Caption with sexist speech",
-        "ableistSpeech": "Total durtation of Caption with ableist speech",
-        "totalDurtationOfHateCaption": "Total durtation of hate Caption",
-        "hateCaption": [
-            {
-                "text": "Content of the hate comment",
-                "timeStamp":"Time of the comment in YY/MM/DD HH:MM:SS format",
-                "username": "Username of the commenter",
-                "profileName": "Profile name of the commenter",
-                "reason": "Reason for classifying the comment as hate speech",
-                "hateOn": ["Types of hate speech identified"],
-                "hatePercentage": Intensity of hate speech (percentage) in integer
+        "sections": {
+            "description": {
+                "racial_hate_speech": "Section of description containing racial hate speech",
+                "homophobic_transphobic_hate_speech": "Section of description containing homophobic or transphobic hate speech",
+                "religious_hate_speech": "Section of description containing religious hate speech",
+                "sexist_speech": "Section of description containing sexist speech",
+                "ableist_speech": "Section of description containing ableist speech",
+                "hate_description_section": "Section of hate description"
+            },
+            "caption": {
+                "contains_hate_speech": "Is there any hate speech in caption?",
+                "racial_hate_speech": "Section of caption containing racial hate speech",
+                "homophobic_transphobic_hate_speech": "Section of caption containing homophobic or transphobic hate speech",
+                "religious_hate_speech": "Section of caption containing religious hate speech",
+                "sexist_speech": "Section of caption containing sexist speech",
+                "ableist_speech": "Section of caption containing ableist speech",
+                "hate_caption_section": "Section of hate caption"
+            },
+            "title": {
+                "hate_caption_section": "Section of hate caption in the video title"
             }
-        ]
-    }
-    ```
-
+        },
+        "intensity": {
+            "hate_speech_percentage_description": 25,
+            "hate_speech_percentage_caption": 15,
+            "overall_hate_percentage": 20
+        }
+    }```
     For the summary:
-    - If there are no comments, output: "No Comments".
+    - If there are no caption, output: "No Captions".
     - If there are no hate comments, provide JSON with empty values.
     """
 
-    
-    json_spec = JsonSpec(dict_=data, max_value_length=4000)
-    json_toolkit = JsonToolkit(spec=json_spec)
-
-    json_agent_executor = create_json_agent(
-        llm=llm_client, toolkit=json_toolkit, verbose=True
-    )
-
-    response = json_agent_executor.run(
-        CAPTION_PROMPT
-    )
+    response = invoke_openai_chat(data, CAPTION_PROMPT)
 
     print(response)
     return response
