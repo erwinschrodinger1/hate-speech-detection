@@ -1,6 +1,7 @@
 import json
 from openai import OpenAI
 import os
+from utils import scraping_post
 
 from dotenv import load_dotenv
 

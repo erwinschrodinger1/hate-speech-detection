@@ -6,6 +6,7 @@ from openai import OpenAI
 import json
 from dotenv import load_dotenv
 import os
+import scraping_post
 
 load_dotenv()
 
@@ -145,4 +146,47 @@ def compute_caption_llm(data):
     response = invoke_openai_chat(data, CAPTION_PROMPT)
 
     print(response)
+    return response
+
+
+def compute_post_llm(json_data):
+    # Define the prompt for processing posts
+    POST_PROMPT = """You've been assigned the task of analyzing posts for hate speech and you can only talk JSON format. Your analysis should include the following:
+    - Determine if there is hate speech in the post text.
+    - Extract sections of the post text containing:
+        - Racial hate speech
+        - Homophobic or transphobic hate speech
+        - Religious hate speech
+        - Sexist speech
+        - Ableist speech
+    - Determine the intensity of hate speech in the post text as a percentage.
+    - Provide the URL of the post.
+    
+    Results should adhere to this structure:
+    ```json
+    {
+        "sections": {
+            "text": {
+                "contains_hate_speech": "Is there any hate speech in the post text?",
+                "racial_hate_speech": "Section of text containing racial hate speech",
+                "homophobic_transphobic_hate_speech": "Section of text containing homophobic or transphobic hate speech",
+                "religious_hate_speech": "Section of text containing religious hate speech",
+                "sexist_speech": "Section of text containing sexist speech",
+                "ableist_speech": "Section of text containing ableist speech"
+            },
+            "url": "URL of the post"
+        },
+        "intensity": {
+            "hate_speech_percentage": 15
+        }
+    }```
+    
+    For the summary:
+    - If there are no posts, output: "No Posts".
+    - If there are no hate posts, provide JSON with empty values.
+    """
+
+    # Invoke OpenAI chat API to process the data
+    response = invoke_openai_chat(json_data, POST_PROMPT)
+
     return response
