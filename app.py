@@ -4,8 +4,8 @@ import os
 import streamlit as st
 from utils.utils import identify_social_media, convert_llm_res_dict
 from utils.sraping import scrape_youtube_comments, scrape_twitter_comments, scrape_instagram_comments, scrape_facebook_comments
-from utils.scraping_post import scrape_youtube_caption
-from utils.llm import compute_comments_llm, compute_caption_llm
+from utils.scraping_post import scrape_youtube_caption, scrape_facebook_group_posts, scrape_user_instagram_posts
+from utils.llm import compute_comments_llm, compute_caption_llm, compute_post_llm
 from streamlit_echarts import st_echarts
 import json
 
@@ -156,21 +156,54 @@ if (submit_btn):
                 st.write(f"Hate Percentage: {comment['hatePercentage']}")
 
     elif selection_option == "Post":
-        if link_of == "YouTube":
-            scraped_data = scrape_youtube_comments(link)
-        elif link_of == "Twitter":
-            scraped_data = scrape_twitter_comments(link)
-        elif link_of == "Instagram":
-            scraped_data = scrape_instagram_comments(link)
+        if link_of == "Instagram":
+            scraped_data = scrape_user_instagram_posts(link)
         elif link_of == "Facebook":
-            scraped_data = scrape_facebook_comments(link)
+            scraped_data = scrape_facebook_group_posts(link)
+
+        with open("test.json",'w') as f:
+            f.write(json.dumps(scraped_data))
+            
+        response = convert_llm_res_dict(compute_post_llm(scraped_data))
+        # response = {
+        #     "sections": {
+        #         "text": {
+        #             "contains_hate_speech": "No",
+        #             "racial_hate_speech": "Section of text containing racial hate speech",
+        #             "homophobic_transphobic_hate_speech": "",
+        #             "religious_hate_speech": "",
+        #             "sexist_speech": "Section of text containing sexist speech",
+        #             "ableist_speech": ""
+        #         },
+        #         "url": "https://example.com/post123"
+        #     },
+        #     "intensity": {
+        #         "hate_speech_percentage": 42
+        #     }
+        # }
+        st.subheader("Sections:")
+        st.write("- Is there any hate speech in the post text?:", response["sections"]["text"]["contains_hate_speech"])
+        st.write("- Section of text containing racial hate speech:", response["sections"]["text"]["racial_hate_speech"])
+        st.write("- Section of text containing homophobic or transphobic hate speech:", response["sections"]["text"]["homophobic_transphobic_hate_speech"])
+        st.write("- Section of text containing religious hate speech:", response["sections"]["text"]["religious_hate_speech"])
+        st.write("- Section of text containing sexist speech:", response["sections"]["text"]["sexist_speech"])
+        st.write("- Section of text containing ableist speech:", response["sections"]["text"]["ableist_speech"])
+        st.write("- Offenive texts", response["sections"]["text"]["text"])
+        st.subheader("URL:")
+        st.write(response["sections"]["url"])
+
+        st.subheader("Intensity:")
+        st.write("- Hate speech percentage:", response["intensity"]["hate_speech_percentage"])
+
+        with open("llmpost.json", "w") as f:
+            f.write(json.dumps(response))
 
     elif selection_option == "Video":
         if link_of == "YouTube":
             scraped_data = scrape_youtube_caption(link)
 
         response = convert_llm_res_dict(compute_caption_llm(scraped_data))
-        with open("llmcaption.json","w") as f:
+        with open("llmcaption.json", "w") as f:
             f.write(json.dumps(response))
         print(response)
         intensity_data = [
@@ -240,3 +273,6 @@ if (submit_btn):
         if response["sections"]["title"]["hate_caption_section"]:
             st.write("Hate Caption Section in Title:",
                      response["sections"]["title"]["hate_caption_section"])
+
+        st.write("- Offenive texts", response["text"])
+        

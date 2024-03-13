@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import json
 
 def identify_social_media(url):
-    pattern = r'\b(?:https?://)?(?:www\.)?(?:(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]+)|(?:instagram\.com/(?:p/|tv/|reel/))([\w.-]+)/?|twitter\.com/[a-zA-Z0-9_]+/status/\d+|(?:facebook\.com|fb\.me)/[\w-]+(?:/posts/\d+)?|linkedin\.com/posts/[a-zA-Z0-9-]+)\b'
+    pattern = r'\b(?:https?://)?(?:www\.)?(?:(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]+)|(?:instagram\.com/)([\w.-]+)/?|twitter\.com/[a-zA-Z0-9_]+/status/\d+|(?:facebook\.com|fb\.me)/[\w-]+(?:/posts/\d+)?|linkedin\.com/posts/[a-zA-Z0-9-]+)\b'
     match = re.search(pattern, url)
     if match:
         platforms = {
@@ -29,4 +29,5 @@ def identify_social_media(url):
     return False, None
 
 def convert_llm_res_dict(string_response):
+    print(string_response)
     return json.loads( string_response.strip("```json").strip("`"))

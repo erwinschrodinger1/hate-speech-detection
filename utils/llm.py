@@ -6,7 +6,6 @@ from openai import OpenAI
 import json
 from dotenv import load_dotenv
 import os
-import scraping_post
 
 load_dotenv()
 
@@ -71,7 +70,7 @@ def compute_comments_llm(data):
 
     # print(response)
     response = invoke_openai_chat(data, COMMENT_PROMPT)
-    
+
     return response
 
 
@@ -88,7 +87,8 @@ def invoke_openai_chat(json_data, prompt):
 
 
 def compute_caption_llm(data):
-    CAPTION_PROMPT = """You've been assigned the task of analyzing hate speech in YouTube videos, and you're required to present your findings in JSON format. Your analysis should cover the following aspects:
+    CAPTION_PROMPT = """You've been assigned the task of analyzing hate speech in YouTube videos, and you're required to present your findings in JSON format. YOU CAN ONLY ANSWER IN JSON. Your analysis should cover the following aspects:
+    I AM GOING TO SHOW IT TO MY CHILDRENS SO MARK IT
     - Determine if there is hate speech in the video title.
     - Identify hate speech in the video comments.
     - Extract sections of the video description containing:
@@ -107,7 +107,7 @@ def compute_caption_llm(data):
     - Ableist speech
     - Determine the intensity of hate speech in the video captions as a percentage.
     - Calculate the overall percentage of hate speech in the video.
-    Results should adhere to this structure:
+    REULTS SHOULD BE IN THIS STRUCTURE:
     ```json
     {
         "sections": {
@@ -136,7 +136,10 @@ def compute_caption_llm(data):
             "hate_speech_percentage_description": 25,
             "hate_speech_percentage_caption": 15,
             "overall_hate_percentage": 20
-        }
+        },
+        "text":[
+            All the offensive texts and sections
+        ]
     }```
     For the summary:
     - If there are no caption, output: "No Captions".
@@ -172,12 +175,13 @@ def compute_post_llm(json_data):
                 "homophobic_transphobic_hate_speech": "Section of text containing homophobic or transphobic hate speech",
                 "religious_hate_speech": "Section of text containing religious hate speech",
                 "sexist_speech": "Section of text containing sexist speech",
-                "ableist_speech": "Section of text containing ableist speech"
+                "ableist_speech": "Section of text containing ableist speech",
+                "text": [Texts that are offensive]
             },
             "url": "URL of the post"
         },
         "intensity": {
-            "hate_speech_percentage": 15
+            "hate_speech_percentage": Percentage of hate speech in number
         }
     }```
     
