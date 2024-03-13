@@ -34,7 +34,7 @@ def scrape_youtube_caption(link):
     }
 
 
-def scrape_instagram_post(post_url):
+def scrape_single_instagram_post(post_url):
     # Prepare the Actor input
     run_input = {
         "startUrls": [{"url": post_url}],
@@ -51,34 +51,50 @@ def scrape_instagram_post(post_url):
     dataset = client.dataset(run["defaultDatasetId"])
     for item in dataset.iterate_items():
         post_info = {}
-
-        # Extract post title
-        post_info["title"] = item["edge_media_to_caption"]["edges"][0]["node"]["text"]
-
+        
         # Extract post description
-        post_info["description"] = item["edge_media_to_caption"]["edges"][0]["node"]["text"]
-
-        # Convert timestamp to human-readable date
-        import datetime
-        created_timestamp = int(item["taken_at_timestamp"])
-        created_date = datetime.datetime.fromtimestamp(created_timestamp).strftime('%Y-%m-%d %H:%M:%S')
-
-        # Extract created date
-        post_info["created_date"] = created_date
-
-        # Append extracted post info to the list
+        post_info["text"] = item["edge_media_to_caption"]["edges"][0]["node"]["text"]
+        post_info["url"] = post_url
+        
         scraped_data.append(post_info)
 
     return scraped_data
 
+# # Example usage
+# post_url = "https://www.instagram.com/p/C4dDe3OvH8h/?utm_source=ig_web_copy_link"
+# insta_posts = scrape_single_instagram_post(post_url)
+# print(insta_posts)
 
-# Example usage
-post_url = "https://www.instagram.com/p/C4dDe3OvH8h/?utm_source=ig_web_copy_link"
-insta_posts = scrape_instagram_post(post_url)
-print(insta_posts)
 
-from apify_client import ApifyClient
+def scrape_user_instagram_posts(username, results_limit=30):
 
+    run_input = {
+        "username": [username],
+        "resultsLimit": results_limit,
+    }
+
+    # Run the Actor and wait for it to finish
+    run = client.actor("apify/instagram-post-scraper").call(run_input=run_input)
+
+    # Initialize an empty list to store the scraped data
+    scraped_data = []
+
+    # Fetch and append Actor results from the run's dataset
+    dataset = client.dataset(run["defaultDatasetId"])
+    for item in dataset.iterate_items():
+        # Extract post text and post URL
+        post_text = item.get('caption', '')
+        post_url = item.get('url', '')
+        scraped_data.append({'text': post_text, 'url': post_url})
+
+    return scraped_data
+
+# # Example usage
+# username = "https://www.instagram.com/coexistingelement/"
+# results = scrape_user_instagram_posts(username)
+# for item in results:
+#     print(item)
+    
 
 def scrape_facebook_group_posts(group_url, results_limit=20):
    
@@ -103,7 +119,9 @@ def scrape_facebook_group_posts(group_url, results_limit=20):
     return scraped_data
 
 
-# Example usage
-group_url = "https://www.facebook.com/kiranjan.zarry"
-posts = scrape_facebook_group_posts(group_url, results_limit=20)
-print(posts)
+# # Example usage
+# group_url = "https://www.facebook.com/kiranjan.zarry"
+# posts = scrape_facebook_group_posts(group_url, results_limit=20)
+# print(posts)
+
+
