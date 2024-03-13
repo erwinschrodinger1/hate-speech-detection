@@ -1,8 +1,10 @@
 from utils.sraping import scrape_instagram_comments
+from utils.llm import compute_comments_llm
 import json
  
 # Data to be written
-dictionary = scrape_instagram_comments("https://www.instagram.com/p/CztUZmMrJOf/?img_index=1")
+dictionary = scrape_instagram_comments("https://www.instagram.com/p/C37aUtkP4DV/")
  
-with open("scraped_data/instagram_comments.json", "w") as outfile:
-    json.dump(dictionary, outfile)
+print(
+    compute_comments_llm(dictionary)
+)
