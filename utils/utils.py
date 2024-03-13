@@ -28,3 +28,5 @@ def identify_social_media(url):
                 return True, platforms[platform]
     return False, None
 
+def convert_llm_res_dict(string_response):
+    return json.loads( string_response.strip("```json").strip("`"))

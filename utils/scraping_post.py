@@ -14,10 +14,11 @@ def scrape_youtube_caption(link):
             {"url": link},
         ],
         "language": "en",
+        "useAsr":True
     }
     # Run the Actor and wait for it to finish
     run = client.actor(
-        "apify/instagram-post-scraper").call(run_input=run_input)
+        "genial_candlestand/youtube-subtitles-scraper").call(run_input=run_input)
 
     # Store dataset object in a variable to avoid repeated calls
     dataset = client.dataset(run["defaultDatasetId"])
@@ -122,6 +123,4 @@ def scrape_facebook_group_posts(group_url, results_limit=20):
 # # Example usage
 # group_url = "https://www.facebook.com/kiranjan.zarry"
 # posts = scrape_facebook_group_posts(group_url, results_limit=20)
-# print(posts)
-
 
