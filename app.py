@@ -18,7 +18,7 @@ import json
 from streamlit_echarts import st_echarts
 from fpdf import FPDF
 import base64
-
+from utils.utils import create_download_link
 SAD_LIMIT = 0.5
 NEUTRAL_LIMIT = 0.3
 
@@ -504,3 +504,27 @@ if True:
 #     html = create_download_link(pdf.output(dest="S").encode("latin-1"), "test")
 
 #     st.markdown(html, unsafe_allow_html=True)
+
+
+export_as_pdf = st.button("Export Detailed Report")
+
+if export_as_pdf:
+    # Create a PDF instance
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Arial', 'B', 16)
+    
+    # Add content to the PDF (you can add content similar to what you display on the Streamlit app)
+    pdf.cell(200, 10, txt="Detailed Report", ln=True, align="C")
+    pdf.cell(200, 10, txt="", ln=True, align="C")  # Add empty line
+    
+    # Add more content here as needed
+    
+    # Get the binary content of the PDF
+    pdf_content = pdf.output(dest="S").encode("latin-1")
+    
+    # Create a download link for the PDF
+    download_link = create_download_link(pdf_content, "detailed_report")
+    
+    # Display the download link
+    st.markdown(download_link, unsafe_allow_html=True)
