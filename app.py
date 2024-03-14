@@ -14,10 +14,11 @@ NEUTRAL_LIMIT = 0.3
 
 st.set_page_config(layout="centered")
 
-images = ['welcome.gif', 'happy.gif', 'happy.gif']
-WELCOME = 0
-HAPPY = 1
+images = ['happy.gif', 'neutral.gif', 'loading.gif', 'sad.webp']
+HAPPY = 0
+NEUTRAL = 1
 LOADING = 2
+SAD = 3
 
 
 def handle_image_change(index):
@@ -61,7 +62,7 @@ with col1:
 with col2:
     image_section = st.empty()
     text_section = st.empty()
-    handle_image_change(1)
+    handle_image_change(HAPPY)
 
 st.divider()
 if (submit_btn):
@@ -82,12 +83,12 @@ if (submit_btn):
         response = convert_llm_res_dict(compute_comments_llm(scraped_data))
         print(type(response))
         if (response != {}):
-            # if response['numberOfHateComments']/response['totalComments'] > SAD_LIMIT:
-            #     avatar_status = AvatarStatus.SAD
-            # elif response['numberOfHateComments']/response['totalComments'] > NEUTRAL_LIMIT:
-            #     avatar_status = AvatarStatus.NEUTRAL
-            # else:
-            #     avatar_status = AvatarStatus.HAPPY
+            if response['numberOfHateComments']/response['totalComments'] > SAD_LIMIT:
+                handle_image_change(SAD)
+            elif response['numberOfHateComments'] > 1:
+                handle_image_change(NEUTRAL)
+            else:
+                handle_image_change(HAPPY)
 
             # Prepare data for pie chart
             dougnut_data = []
@@ -167,12 +168,12 @@ if (submit_btn):
             f.write(json.dumps(response))
 
         if (response != {}):
-            # if response['numberOfHateComments']/response['totalComments'] > SAD_LIMIT:
-            #     avatar_status = AvatarStatus.SAD
-            # elif response['numberOfHateComments']/response['totalComments'] > NEUTRAL_LIMIT:
-            #     avatar_status = AvatarStatus.NEUTRAL
-            # else:
-            #     avatar_status = AvatarStatus.HAPPY
+            if response['numberOfHatePosts']/response['totalPosts'] > SAD_LIMIT:
+                handle_image_change(SAD)
+            elif response['numberOfHatePosts'] > 1:
+                handle_image_change(NEUTRAL)
+            else:
+                handle_image_change(HAPPY)
 
             # Prepare data for pie chart
             dougnut_data = []
@@ -249,6 +250,9 @@ if (submit_btn):
             f.write(json.dumps(response))
         print(response)
         if response != {}:
+            if response['numberOfHateComments'] > 1:
+                handle_image_change(SAD)
+
             dougnut_data = []
             for key, value in response.items():
                 if key.endswith("Speech"):
