@@ -8,6 +8,9 @@ from utils.scraping_post import scrape_youtube_caption, scrape_facebook_group_po
 from utils.llm import compute_comments_llm, compute_caption_llm, compute_post_llm
 from streamlit_echarts import st_echarts
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 
 SAD_LIMIT = 0.5
 NEUTRAL_LIMIT = 0.3
