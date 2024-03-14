@@ -15,7 +15,7 @@ load_dotenv()
 SAD_LIMIT = 0.5
 NEUTRAL_LIMIT = 0.3
 
-st.set_page_config(layout="centered")
+st.set_page_config(layout="centered",page_title="Upper Limit Tech Solutions", page_icon="assets/favicon.ico")
 
 images = ['happy.gif', 'neutral.gif', 'loading.gif', 'sad.webp']
 HAPPY = 0
@@ -69,227 +69,67 @@ with col2:
 
 st.divider()
 if (submit_btn):
-    handle_image_change(LOADING)
-    if selection_option == "Comments" or selection_option == "Tweet":
-        if link_of == "YouTube":
-            scraped_data = scrape_youtube_comments(link)
-        elif link_of == "Twitter":
-            scraped_data = scrape_twitter_comments(link)
-        elif link_of == "Instagram":
-            scraped_data = scrape_instagram_comments(link)
-        elif link_of == "Facebook":
-            scraped_data = scrape_facebook_comments(link)
+    try:    
+        handle_image_change(LOADING)
+        if selection_option == "Comments" or selection_option == "Tweet":
+            if link_of == "YouTube":
+                scraped_data = scrape_youtube_comments(link)
+            elif link_of == "Twitter":
+                scraped_data = scrape_twitter_comments(link)
+            elif link_of == "Instagram":
+                scraped_data = scrape_instagram_comments(link)
+            elif link_of == "Facebook":
+                scraped_data = scrape_facebook_comments(link)
 
-        with open("test.json", 'w') as f:
-            f.write(json.dumps(scraped_data))
+            with open("test.json", 'w') as f:
+                f.write(json.dumps(scraped_data))
 
-        response = convert_llm_res_dict(compute_comments_llm(scraped_data))
-        print(type(response))
-        if (response != {}):
-            if response['numberOfHateComments']/response['totalComments'] > SAD_LIMIT:
-                handle_image_change(SAD)
-            elif response['numberOfHateComments'] > 1:
-                handle_image_change(NEUTRAL)
-            else:
-                handle_image_change(HAPPY)
+            response = convert_llm_res_dict(compute_comments_llm(scraped_data))
+            print(type(response))
+            if (response != {}):
+                if response['totalComments']!=0:
+                    if response['numberOfHateComments']/response['totalComments'] > SAD_LIMIT:
+                        handle_image_change(SAD)
+                    elif response['numberOfHateComments'] > 1:
+                        handle_image_change(NEUTRAL)
+                    else:
+                        handle_image_change(HAPPY)
 
-            # Prepare data for pie chart
-            dougnut_data = []
-            for key, value in response.items():
-                if key.endswith("Speech"):
-                    label = key.replace("Speech", "")
-                    dougnut_data.append({"value": value, "name": label})
+                # Prepare data for pie chart
+                dougnut_data = []
+                for key, value in response.items():
+                    if key.endswith("Speech"):
+                        label = key.replace("Speech", "")
+                        dougnut_data.append({"value": value, "name": label})
 
-            options = {
-                "backgroundColor": "#000000",
-                "tooltip": {"trigger": "item"},
-                "legend": {"top": "5%", "left": "center", "textStyle": {
-                    "color": "#fff"
-                }, },
-                "series": [
-                    {
-                        "name": "Dougnut",
-                        "type": "pie",
-                        "radius": ["40%", "70%"],
-                        "avoidLabelOverlap": False,
-                        "itemStyle": {
-                            "borderRadius": 10,
-                            "borderColor": "#000",
-                            "borderWidth": 2,
-                        },
-                        "label": {"show": False, "position": "center", "textStyle": {
-                            "color": "#fff"
-                        }},
-                        "emphasis": {
-                            "label": {"show": True, "fontSize": "40", "fontWeight": "bold"}
-                        },
-                        "labelLine": {"show": False},
-                        "data": dougnut_data,
-                    }
-                ],
-            }
-        col1, col2 = st.columns((1, 1))
-        with col1:
-            # Display the pie chart
-            st_echarts(options=options, height="500px")
-        with col2:
-            with st.container(border=True):
-                st.markdown(f"""
-                    **Total Comments** : {response["totalComments"]} \n
-                    **Total Hate Comments** : {response["numberOfHateComments"]} \n
-                    **Breakdown of Hate Speech:**
-                    - Racial Hate Speech: {response["racialHateSpeech"]}
-                    - Homophobic/Transphobic Speech: {response["homophobicTransphobicSpeech"]}
-                    - Religious Hate Speech: {response["religiousHateSpeech"]}
-                    - Sexist Speech: {response["sexistSpeech"]}
-                    - Ableist Speech: {response["ableistSpeech"]}
-                """)
-
-        st.subheader("Hate Comments")
-        for comment in response['hateComments']:
-            with st.container(border=True):
-                st.markdown(
-                    f"""
-                    <div style="display:flex; justify-content: space-between; width:100%;">
-                    <strong> {comment['text']} </strong>
-                    <p>{comment['timeStamp']}""", unsafe_allow_html=True)
-                st.write(f"Reason: {comment['reason']}")
-                st.write(f"Hate On: {', '.join(comment['hateOn'])}")
-                st.write(f"Hate Percentage: {comment['hatePercentage']}")
-        text_section.write(response["summary"])
-    elif selection_option == "Post":
-        if link_of == "Instagram":
-            scraped_data = scrape_user_instagram_posts(link)
-        elif link_of == "Facebook":
-            scraped_data = scrape_facebook_group_posts(link)
-
-        with open("test.json", 'w') as f:
-            f.write(json.dumps(scraped_data))
-
-        response = convert_llm_res_dict(compute_post_llm(scraped_data))
-        with open("llmpost.json", "w") as f:
-            f.write(json.dumps(response))
-
-        if (response != {}):
-            if response['numberOfHatePosts']/response['totalPosts'] > SAD_LIMIT:
-                handle_image_change(SAD)
-            elif response['numberOfHatePosts'] > 1:
-                handle_image_change(NEUTRAL)
-            else:
-                handle_image_change(HAPPY)
-
-            # Prepare data for pie chart
-            dougnut_data = []
-            for key, value in response.items():
-                if key.endswith("Speech"):
-                    label = key.replace("Speech", "")
-                    dougnut_data.append({"value": value, "name": label})
-
-            options = {
-                "backgroundColor": "#000000",
-                "tooltip": {"trigger": "item"},
-                "legend": {"top": "5%", "left": "center", "textStyle": {
-                    "color": "#fff"
-                }, },
-                "series": [
-                    {
-                        "name": "Dougnut",
-                        "type": "pie",
-                        "radius": ["40%", "70%"],
-                        "avoidLabelOverlap": False,
-                        "itemStyle": {
-                            "borderRadius": 10,
-                            "borderColor": "#000",
-                            "borderWidth": 2,
-                        },
-                        "label": {"show": False, "position": "center", "textStyle": {
-                            "color": "#fff"
-                        }},
-                        "emphasis": {
-                            "label": {"show": True, "fontSize": "40", "fontWeight": "bold"}
-                        },
-                        "labelLine": {"show": False},
-                        "data": dougnut_data,
-                    }
-                ],
-            }
-        col1, col2 = st.columns((1, 1))
-        with col1:
-            # Display the pie chart
-            st_echarts(options=options, height="500px")
-        with col2:
-            with st.container(border=True):
-                st.markdown(f"""
-                    **Total Posts** : {response["totalPosts"]} \n
-                    **Total Hate Posts** : {response["numberOfHatePosts"]} \n
-                    **Breakdown of Hate Speech:**
-                    - Racial Hate Speech: {response["racialHateSpeech"]}
-                    - Homophobic/Transphobic Speech: {response["homophobicTransphobicSpeech"]}
-                    - Religious Hate Speech: {response["religiousHateSpeech"]}
-                    - Sexist Speech: {response["sexistSpeech"]}
-                    - Ableist Speech: {response["ableistSpeech"]}
-                """)
-
-        st.subheader("Hate Posts")
-        for comment in response['hatePosts']:
-            with st.container(border=True):
-                st.markdown(
-                    f"""
-                    <div style="display:flex; justify-content: space-between; width:100%;">
-                    <strong> {comment['text']} </strong>
-                    """, unsafe_allow_html=True)
-                st.markdown(f""" **URL:**
-                            {comment['url']}""")
-                st.write(f"Reason: {comment['reason']}")
-                st.write(f"Hate On: {', '.join(comment['hateOn'])}")
-                st.write(f"Hate Percentage: {comment['hatePercentage']}")
-        text_section.write(response["summary"])
-    elif selection_option == "Video":
-        if link_of == "YouTube":
-            scraped_data = scrape_youtube_caption(link)
-
-        response = convert_llm_res_dict(compute_caption_llm(scraped_data))
-        with open("llmcaption.json", "w") as f:
-            f.write(json.dumps(response))
-        print(response)
-        if response != {}:
-            if response['numberOfHateComments'] > 1:
-                handle_image_change(SAD)
-
-            dougnut_data = []
-            for key, value in response.items():
-                if key.endswith("Speech"):
-                    label = key.replace("Speech", "")
-                    dougnut_data.append({"value": value, "name": label})
-
-            options = {
-                "backgroundColor": "#000000",
-                "tooltip": {"trigger": "item"},
-                "legend": {"top": "5%", "left": "center", "textStyle": {
-                    "color": "#fff"
-                }, },
-                "series": [
-                    {
-                        "name": "Dougnut",
-                        "type": "pie",
-                        "radius": ["40%", "70%"],
-                        "avoidLabelOverlap": False,
-                        "itemStyle": {
-                            "borderRadius": 10,
-                            "borderColor": "#000",
-                            "borderWidth": 2,
-                        },
-                        "label": {"show": False, "position": "center", "textStyle": {
-                            "color": "#fff"
-                        }},
-                        "emphasis": {
-                            "label": {"show": True, "fontSize": "40", "fontWeight": "bold"}
-                        },
-                        "labelLine": {"show": False},
-                        "data": dougnut_data,
-                    }
-                ],
-            }
+                options = {
+                    "backgroundColor": "#000000",
+                    "tooltip": {"trigger": "item"},
+                    "legend": {"top": "5%", "left": "center", "textStyle": {
+                        "color": "#fff"
+                    }, },
+                    "series": [
+                        {
+                            "name": "Dougnut",
+                            "type": "pie",
+                            "radius": ["40%", "70%"],
+                            "avoidLabelOverlap": False,
+                            "itemStyle": {
+                                "borderRadius": 10,
+                                "borderColor": "#000",
+                                "borderWidth": 2,
+                            },
+                            "label": {"show": False, "position": "center", "textStyle": {
+                                "color": "#fff"
+                            }},
+                            "emphasis": {
+                                "label": {"show": True, "fontSize": "40", "fontWeight": "bold"}
+                            },
+                            "labelLine": {"show": False},
+                            "data": dougnut_data,
+                        }
+                    ],
+                }
             col1, col2 = st.columns((1, 1))
             with col1:
                 # Display the pie chart
@@ -297,7 +137,8 @@ if (submit_btn):
             with col2:
                 with st.container(border=True):
                     st.markdown(f"""
-                        **Total Hate Content** : {response["numberOfHateComments"]} \n
+                        **Total Comments** : {response["totalComments"]} \n
+                        **Total Hate Comments** : {response["numberOfHateComments"]} \n
                         **Breakdown of Hate Speech:**
                         - Racial Hate Speech: {response["racialHateSpeech"]}
                         - Homophobic/Transphobic Speech: {response["homophobicTransphobicSpeech"]}
@@ -306,17 +147,181 @@ if (submit_btn):
                         - Ableist Speech: {response["ableistSpeech"]}
                     """)
 
-            st.subheader("Hate Content")
-            for comment in response['hateContent']:
+            st.subheader("Hate Comments")
+            for comment in response['hateComments']:
+                with st.container(border=True):
+                    st.markdown(
+                        f"""
+                        <div style="display:flex; justify-content: space-between; width:100%;">
+                        <strong> {comment['text']} </strong>
+                        <p>{comment['timeStamp']}""", unsafe_allow_html=True)
+                    st.write(f"Reason: {comment['reason']}")
+                    st.write(f"Hate On: {', '.join(comment['hateOn'])}")
+                    st.write(f"Hate Percentage: {comment['hatePercentage']}")
+            text_section.write(response["summary"])
+        elif selection_option == "Post":
+            if link_of == "Instagram":
+                scraped_data = scrape_user_instagram_posts(link)
+            elif link_of == "Facebook":
+                scraped_data = scrape_facebook_group_posts(link)
+
+            with open("test.json", 'w') as f:
+                f.write(json.dumps(scraped_data))
+
+            response = convert_llm_res_dict(compute_post_llm(scraped_data))
+            with open("llmpost.json", "w") as f:
+                f.write(json.dumps(response))
+
+            if (response != {}):
+                if response['totalPosts']!=0:
+                    if response['numberOfHatePosts']/response['totalPosts'] > SAD_LIMIT:
+                        handle_image_change(SAD)
+                    elif response['numberOfHatePosts'] > 1:
+                        handle_image_change(NEUTRAL)
+                    else:
+                        handle_image_change(HAPPY)
+
+                # Prepare data for pie chart
+                dougnut_data = []
+                for key, value in response.items():
+                    if key.endswith("Speech"):
+                        label = key.replace("Speech", "")
+                        dougnut_data.append({"value": value, "name": label})
+
+                options = {
+                    "backgroundColor": "#000000",
+                    "tooltip": {"trigger": "item"},
+                    "legend": {"top": "5%", "left": "center", "textStyle": {
+                        "color": "#fff"
+                    }, },
+                    "series": [
+                        {
+                            "name": "Dougnut",
+                            "type": "pie",
+                            "radius": ["40%", "70%"],
+                            "avoidLabelOverlap": False,
+                            "itemStyle": {
+                                "borderRadius": 10,
+                                "borderColor": "#000",
+                                "borderWidth": 2,
+                            },
+                            "label": {"show": False, "position": "center", "textStyle": {
+                                "color": "#fff"
+                            }},
+                            "emphasis": {
+                                "label": {"show": True, "fontSize": "40", "fontWeight": "bold"}
+                            },
+                            "labelLine": {"show": False},
+                            "data": dougnut_data,
+                        }
+                    ],
+                }
+            col1, col2 = st.columns((1, 1))
+            with col1:
+                # Display the pie chart
+                st_echarts(options=options, height="500px")
+            with col2:
+                with st.container(border=True):
+                    st.markdown(f"""
+                        **Total Posts** : {response["totalPosts"]} \n
+                        **Total Hate Posts** : {response["numberOfHatePosts"]} \n
+                        **Breakdown of Hate Speech:**
+                        - Racial Hate Speech: {response["racialHateSpeech"]}
+                        - Homophobic/Transphobic Speech: {response["homophobicTransphobicSpeech"]}
+                        - Religious Hate Speech: {response["religiousHateSpeech"]}
+                        - Sexist Speech: {response["sexistSpeech"]}
+                        - Ableist Speech: {response["ableistSpeech"]}
+                    """)
+
+            st.subheader("Hate Posts")
+            for comment in response['hatePosts']:
                 with st.container(border=True):
                     st.markdown(
                         f"""
                         <div style="display:flex; justify-content: space-between; width:100%;">
                         <strong> {comment['text']} </strong>
                         """, unsafe_allow_html=True)
-                    st.markdown(f"""isIn:
-                                {comment['isIn']}""")
+                    st.markdown(f""" **URL:**
+                                {comment['url']}""")
                     st.write(f"Reason: {comment['reason']}")
                     st.write(f"Hate On: {', '.join(comment['hateOn'])}")
                     st.write(f"Hate Percentage: {comment['hatePercentage']}")
             text_section.write(response["summary"])
+        elif selection_option == "Video":
+            if link_of == "YouTube":
+                scraped_data = scrape_youtube_caption(link)
+
+            response = convert_llm_res_dict(compute_caption_llm(scraped_data))
+            with open("llmcaption.json", "w") as f:
+                f.write(json.dumps(response))
+            print(response)
+            if response != {}:
+                if response['numberOfHateComments'] > 1:
+                    handle_image_change(SAD)
+
+                dougnut_data = []
+                for key, value in response.items():
+                    if key.endswith("Speech"):
+                        label = key.replace("Speech", "")
+                        dougnut_data.append({"value": value, "name": label})
+
+                options = {
+                    "backgroundColor": "#000000",
+                    "tooltip": {"trigger": "item"},
+                    "legend": {"top": "5%", "left": "center", "textStyle": {
+                        "color": "#fff"
+                    }, },
+                    "series": [
+                        {
+                            "name": "Dougnut",
+                            "type": "pie",
+                            "radius": ["40%", "70%"],
+                            "avoidLabelOverlap": False,
+                            "itemStyle": {
+                                "borderRadius": 10,
+                                "borderColor": "#000",
+                                "borderWidth": 2,
+                            },
+                            "label": {"show": False, "position": "center", "textStyle": {
+                                "color": "#fff"
+                            }},
+                            "emphasis": {
+                                "label": {"show": True, "fontSize": "40", "fontWeight": "bold"}
+                            },
+                            "labelLine": {"show": False},
+                            "data": dougnut_data,
+                        }
+                    ],
+                }
+                col1, col2 = st.columns((1, 1))
+                with col1:
+                    # Display the pie chart
+                    st_echarts(options=options, height="500px")
+                with col2:
+                    with st.container(border=True):
+                        st.markdown(f"""
+                            **Total Hate Content** : {response["numberOfHateComments"]} \n
+                            **Breakdown of Hate Speech:**
+                            - Racial Hate Speech: {response["racialHateSpeech"]}
+                            - Homophobic/Transphobic Speech: {response["homophobicTransphobicSpeech"]}
+                            - Religious Hate Speech: {response["religiousHateSpeech"]}
+                            - Sexist Speech: {response["sexistSpeech"]}
+                            - Ableist Speech: {response["ableistSpeech"]}
+                        """)
+
+                st.subheader("Hate Content")
+                for comment in response['hateContent']:
+                    with st.container(border=True):
+                        st.markdown(
+                            f"""
+                            <div style="display:flex; justify-content: space-between; width:100%;">
+                            <strong> {comment['text']} </strong>
+                            """, unsafe_allow_html=True)
+                        st.markdown(f"""isIn:
+                                    {comment['isIn']}""")
+                        st.write(f"Reason: {comment['reason']}")
+                        st.write(f"Hate On: {', '.join(comment['hateOn'])}")
+                        st.write(f"Hate Percentage: {comment['hatePercentage']}")
+                text_section.write(response["summary"])
+    except Exception as e:
+        st.error('Connection Issue! Please try again', icon="🚨")
