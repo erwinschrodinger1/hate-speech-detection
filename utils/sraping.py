@@ -2,6 +2,10 @@ from apify_client import ApifyClient
 import os
 import json
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 api_key = os.environ.get("APIFY_API_TOKEN")
 print(api_key)
 
