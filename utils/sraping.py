@@ -36,7 +36,7 @@ def scrape_instagram_comments(link):
 
 def scrape_facebook_comments(link):
     run_input = {
-        "includeNestedComments": True,
+        "includeNestedComments": False,
         "startUrls": [{"url": link}],
         "resultsLimit": 25,
     }

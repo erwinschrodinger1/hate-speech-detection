@@ -1,1 +1,1 @@
-{"sections": {"text": {"contains_hate_speech": "No hate speech detected in the post text.", "racial_hate_speech": "", "homophobic_transphobic_hate_speech": "", "religious_hate_speech": "", "sexist_speech": "", "ableist_speech": "", "text": []}, "url": ""}, "intensity": {"hate_speech_percentage": 0}}
+{"totalPosts": 19, "racialHateSpeech": 0, "homophobicTransphobicSpeech": 0, "religiousHateSpeech": 0, "sexistSpeech": 0, "ableistSpeech": 0, "numberOfHatePosts": 0, "hatePosts": [], "summary": "No hate speech found in the posts."}

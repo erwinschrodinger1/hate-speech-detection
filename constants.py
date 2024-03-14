@@ -22,12 +22,5 @@ labels_and_options = [
         "labels": [
             "Tweet",
         ]
-    },
-    {
-        "platform": "LinkedIn",
-        "labels": [
-            "Post",
-            "Comments"
-        ]
     }
 ]

@@ -1,1 +1,101 @@
-{"sections": {"description": {"racial_hate_speech": null, "homophobic_transphobic_hate_speech": null, "religious_hate_speech": null, "sexist_speech": null, "ableist_speech": null, "hate_description_section": null}, "caption": {"contains_hate_speech": false, "racial_hate_speech": null, "homophobic_transphobic_hate_speech": null, "religious_hate_speech": null, "sexist_speech": null, "ableist_speech": null, "hate_caption_section": null}, "title": {"hate_caption_section": null}}, "intensity": {"hate_speech_percentage_description": 0, "hate_speech_percentage_caption": 0, "overall_hate_percentage": 0}, "text": []}
+{
+  "racialHateSpeech": 6,
+  "homophobicTransphobicSpeech": 2,
+  "religiousHateSpeech": 1,
+  "sexistSpeech": 3,
+  "ableistSpeech": 1,
+  "numberOfHateComments": 13,
+  "hateContent": [
+    {
+      "text": "Your life could be worse, you could be a black",
+      "isIn": "Captions",
+      "reason": "Contains racial hate speech",
+      "hateOn": ["Racial"],
+      "hatePercentage": 23
+    },
+    {
+      "text": "Peter has a whip because, well, you know, given your racial heritage",
+      "isIn": "Captions",
+      "reason": "Contains racial hate speech",
+      "hateOn": ["Racial"],
+      "hatePercentage": 17
+    },
+    {
+      "text": "Why are there so few black baseball players? Because they're always stealing bases",
+      "isIn": "Captions",
+      "reason": "Contains racial hate speech",
+      "hateOn": ["Racial"],
+      "hatePercentage": 21
+    },
+    {
+      "text": "I'm so sick of your crap. Why do you always do these stupid things?",
+      "isIn": "Captions",
+      "reason": "Contains sexist speech",
+      "hateOn": ["Sexist"],
+      "hatePercentage": 15
+    },
+    {
+      "text": "9/11 changed everything. Peter, you didn't even know what 9/11 was until 2004.",
+      "isIn": "Captions",
+      "reason": "Contains insensitive speech",
+      "hateOn": ["Insensitive"],
+      "hatePercentage": 12
+    },
+    {
+      "text": "That joke is offensive.",
+      "isIn": "Captions",
+      "reason": "Contains offensive speech",
+      "hateOn": ["Offensive"],
+      "hatePercentage": 8
+    },
+    {
+      "text": "That's why douche douchebag.",
+      "isIn": "Captions",
+      "reason": "Contains ableist speech",
+      "hateOn": ["Ableist"],
+      "hatePercentage": 11
+    },
+    {
+      "text": "I kill it.",
+      "isIn": "Captions",
+      "reason": "Contains violent speech",
+      "hateOn": ["Violent"],
+      "hatePercentage": 5
+    },
+    {
+      "text": "Was anybody gonna wake me up for the party? It's 6:30.",
+      "isIn": "Captions",
+      "reason": "Contains insensitive speech",
+      "hateOn": ["Insensitive"],
+      "hatePercentage": 9
+    },
+    {
+      "text": "This is why I hate going outside.",
+      "isIn": "Captions",
+      "reason": "Contains negative speech",
+      "hateOn": ["Negative"],
+      "hatePercentage": 7
+    },
+    {
+      "text": "And again, the global community's inaction during the Holocaust was unforgivable.",
+      "isIn": "Captions",
+      "reason": "Contains sensitive topic",
+      "hateOn": ["Sensitive"],
+      "hatePercentage": 10
+    },
+    {
+      "text": "Hey Dale, I noticed your lawn's getting a little high.",
+      "isIn": "Captions",
+      "reason": "Contains insensitive speech",
+      "hateOn": ["Insensitive"],
+      "hatePercentage": 6
+    },
+    {
+      "text": "Okay, so, uh, you're free to go.",
+      "isIn": "Captions",
+      "reason": "Contains insensitive speech",
+      "hateOn": ["Insensitive"],
+      "hatePercentage": 8
+    }
+  ]
+}
